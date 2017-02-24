@@ -1,0 +1,131 @@
+package ru.divizdev;
+
+import java.io.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Created by diviz on 24.02.2017.
+ */
+public class ConvertAlterName {
+
+    private final int SIZE_PACKAGE = 1000;
+
+    private final String dropDb = "drop table if exists AlterGeoName";
+    private final String createDbSql = "create table if not exists AlterGeoName (\n" +
+            "alternateNameId integer  primary key, \n" +
+            "geonameid    integer ,  \n" +
+            "isolanguage  text,  \n" +
+            "alternateName text, \n" +
+            "isPreferredName nvarchar, \n" +
+            "isShortName   nvarchar,  \n" +
+            "isColloquial  nvarchar, \n" +
+            "isHistoric    nvarchar \n" +
+            ")";
+
+    private final String insertLineGeoName = "insert into AlterGeoName values(%d, %d, '%s', '%s', '%s', '%s', '%s', '%s')";
+
+
+    public Boolean CreateDB() {
+
+        try (Connection connection = DriverManager.getConnection("jdbc:sqlite:sample.db")) {
+            // create a database connection
+
+            Statement statement = connection.createStatement();
+            statement.setQueryTimeout(30);  // set timeout to 30 sec.
+
+            statement.executeUpdate(dropDb);
+            statement.executeUpdate(createDbSql);
+        } catch (SQLException e) {
+            // if the error message is "out of memory",
+            // it probably means no database file is found
+            System.err.println(e.getMessage());
+            return false;
+        }
+        return true;
+    }
+
+    public boolean InsertListGeoName(List<AlterGeoName> list) {
+        try (Connection connection = DriverManager.getConnection("jdbc:sqlite:sample.db")) {
+            // create a database connection
+
+            Statement statement = connection.createStatement();
+            statement.setQueryTimeout(30);  // set timeout to 30 sec.
+
+            statement.executeUpdate("PRAGMA synchronous = 0;");
+            statement.executeUpdate("PRAGMA journal_mode = OFF;");
+            statement.executeUpdate("BEGIN;");
+            for (AlterGeoName item : list) {
+                InsertLineDB(statement, item);
+            }
+            statement.execute("commit;");
+
+        } catch (SQLException e) {
+            // if the error message is "out of memory",
+            // it probably means no database file is found
+            System.err.println(e.getMessage());
+            return false;
+        }
+        return true;
+    }
+
+    private void InsertLineDB(Statement statement, AlterGeoName line) throws SQLException {
+
+        String command = String.format(insertLineGeoName,
+                line.getAlternateNameId(),
+                line.getGeonameid(),
+                line.getIsolanguage(),
+                line.getAlternateName(),
+                line.isPreferredNameDB(),
+                line.isShortNameDB(),
+                line.isColloquialDB(),
+                line.isHistoricDB());
+        statement.executeUpdate(command);
+    }
+
+    public void LoadFileToBD(String nameFile) {
+        File file = new File(nameFile);
+        Integer count = 0;
+
+        List<AlterGeoName> listAlterGeoName = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] arr = line.split("\t");
+                if (arr.length == AlterGeoName.LENGTH_PARAM && (arr[2].equals("ru") || arr[2].equals("rus"))) {
+                    AlterGeoName item = new AlterGeoName(
+                            Integer.valueOf(arr[0]),
+                            Integer.valueOf(arr[1]),
+                            arr[2].replace("'", ""),
+                            arr[3].replace("'", ""),
+                            arr[4].length() > 0 ? arr[4].charAt(0) : '0',
+                            arr[5].length() > 0 ? arr[5].charAt(0) : '0',
+                            arr[6].length() > 0 ? arr[6].charAt(0) : '0',
+                            arr[7].length() > 0 ? arr[7].charAt(0) : '0'
+                    );
+                    listAlterGeoName.add(item);
+                }
+                if (listAlterGeoName.size() >= SIZE_PACKAGE) {
+                    InsertListGeoName(listAlterGeoName);
+                    listAlterGeoName.clear();
+                    count++;
+                    System.out.println();
+                    System.out.printf("Сохранили %d записей AlterGeoName", (count * SIZE_PACKAGE));
+                }
+            }
+            if (listAlterGeoName.size() != 0) {
+                InsertListGeoName(listAlterGeoName);
+                listAlterGeoName.clear();
+            }
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
