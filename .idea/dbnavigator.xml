@@ -25,13 +25,13 @@
     <show-object-properties value="true" />
     <loaded-nodes>
       <connection connection-id="808c2b36-102f-4093-b9c8-16a6232db9de">
-        <schema name="main" object-types="column, constraint, index, table, dataset trigger, view" />
+        <schema name="main" object-types="column, index, table, view" />
       </connection>
     </loaded-nodes>
   </component>
   <component name="DBNavigator.Project.DatabaseConsoleManager">
     <connection id="808c2b36-102f-4093-b9c8-16a6232db9de">
-      <console name="Connection" type="STANDARD"><![CDATA[select g.geonameid, g.name, a.alternateName from "GeoName" as g
+      <console name="Connection" type="STANDARD"><![CDATA[select count(*) from "GeoName" as g
  inner join "AlterGeoName" as a on g.geonameid = a.geonameid;]]></console>
     </connection>
   </component>

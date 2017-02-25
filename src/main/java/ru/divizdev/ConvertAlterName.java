@@ -90,25 +90,33 @@ public class ConvertAlterName {
     public void LoadFileToBD(String nameFile) {
         File file = new File(nameFile);
         Integer count = 0;
+        int countFail = 0;
 
         List<AlterGeoName> listAlterGeoName = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] arr = line.split("\t");
-                if (arr.length == AlterGeoName.LENGTH_PARAM && (arr[2].equals("ru") || arr[2].equals("rus"))) {
-                    AlterGeoName item = new AlterGeoName(
-                            Integer.valueOf(arr[0]),
-                            Integer.valueOf(arr[1]),
-                            arr[2].replace("'", ""),
-                            arr[3].replace("'", ""),
-                            arr[4].length() > 0 ? arr[4].charAt(0) : '0',
-                            arr[5].length() > 0 ? arr[5].charAt(0) : '0',
-                            arr[6].length() > 0 ? arr[6].charAt(0) : '0',
-                            arr[7].length() > 0 ? arr[7].charAt(0) : '0'
-                    );
-                    listAlterGeoName.add(item);
+                if (arr.length <= AlterGeoName.LENGTH_PARAM) {
+                    String[] param = {"", "", "","","","","",""};
+                    for (int i = 0; i < arr.length; i++) {
+                        param[i] = arr[i];
+                    }
+                    if (param[2].toLowerCase().equals("ru") || param[2].toLowerCase().equals("rus")) {
+                        AlterGeoName item = new AlterGeoName(
+                                Integer.valueOf(arr[0]),
+                                Integer.valueOf(arr[1]),
+                                param[2].replace("'", ""),
+                                param[3].replace("'", ""),
+                                param[4].length() > 0 ? arr[4].charAt(0) : '0',
+                                param[5].length() > 0 ? arr[5].charAt(0) : '0',
+                                param[6].length() > 0 ? arr[6].charAt(0) : '0',
+                                param[7].length() > 0 ? arr[7].charAt(0) : '0'
+                        );
+                        listAlterGeoName.add(item);
+                    }
                 }
+                else countFail++;
                 if (listAlterGeoName.size() >= SIZE_PACKAGE) {
                     InsertListGeoName(listAlterGeoName);
                     listAlterGeoName.clear();
@@ -121,6 +129,8 @@ public class ConvertAlterName {
                 InsertListGeoName(listAlterGeoName);
                 listAlterGeoName.clear();
             }
+
+            System.out.printf("\nЗаписей %d не прошли проверку", countFail);
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
