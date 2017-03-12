@@ -4,6 +4,7 @@ import java.io.*;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by diviz on 24.02.2017.
@@ -13,10 +14,11 @@ public class ConvertGeoName {
 
     private final static int SIZE_PACKAGE = 1000;
 
-    private final static String CREATE_DB_SQL_GEO_NAME = "create table if not exists GeoName (geonameid  integer PRIMARY KEY,\n" +
+    private final static String CREATE_DB_SQL_GEO_NAME = "create table if not exists GeoName (" +
+            "geonameid  integer PRIMARY KEY,\n" +
             "name  text,\n" +
-            "asciiname text,\n" +
-            "alternatenames  text,\n" +
+//            "asciiname text,\n" +
+//            "alternatenames  text,\n" +
             "latitude real,\n" +
             "longitude real,\n" +
             "feature_class text    ,\n" +
@@ -36,8 +38,8 @@ public class ConvertGeoName {
     private final static String INSERT_LINE_GEO_NAME = "insert into GeoName values(" +
             "%d, " +
             "'%s', " +
-            "'%s', " +
-            "'%s', " +
+//            "'%s', " +
+//            "'%s', " +
             "'%s', " +
             "'%s', " +
             "'%s', " +
@@ -75,6 +77,7 @@ public class ConvertGeoName {
 
     }
 
+
     public boolean InsertListGeoName(List<GeoName> list) {
                 try (Connection connection = DriverManager.getConnection("jdbc:sqlite:sample.db")) {
                     // create a database connection
@@ -104,8 +107,8 @@ public class ConvertGeoName {
         String command = String.format(INSERT_LINE_GEO_NAME,
                 line.getGeonameid(),
                 line.getName(),
-                line.getAsciiname(),
-                line.getAlternatenames(),
+//                line.getAsciiname(),
+//                line.getAlternatenames(),
                 line.getLatitude(),
                 line.getLongitude(),
                 line.getFeatureClass(),

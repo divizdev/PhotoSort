@@ -29,6 +29,8 @@ public class ConvertAlterName {
 
     private final String insertLineGeoName = "insert into AlterGeoName values(%d, %d, '%s', '%s', '%s', '%s', '%s', '%s')";
 
+    private final String updateDbSql = "update GeoName set name = '%s' where geonameid = %d";
+
 
     public Boolean CreateDB() {
 
@@ -87,6 +89,11 @@ public class ConvertAlterName {
         statement.executeUpdate(command);
     }
 
+    private void UpdateLineDB(Statement statemen, AlterGeoName line) throws SQLException {
+        String command = String.format(updateDbSql, line.getAlternateName(), line.getGeonameid());
+        statemen.executeUpdate(command);
+    }
+
     public void LoadFileToBD(String nameFile) {
         File file = new File(nameFile);
         Integer count = 0;
@@ -116,9 +123,12 @@ public class ConvertAlterName {
                         listAlterGeoName.add(item);
                     }
                 }
-                else countFail++;
+                else {
+                    countFail++;
+                }
                 if (listAlterGeoName.size() >= SIZE_PACKAGE) {
-                    InsertListGeoName(listAlterGeoName);
+                    //InsertListGeoName(listAlterGeoName);
+                    UpdateGeoName(listAlterGeoName);
                     listAlterGeoName.clear();
                     count++;
                     System.out.println();
@@ -126,7 +136,8 @@ public class ConvertAlterName {
                 }
             }
             if (listAlterGeoName.size() != 0) {
-                InsertListGeoName(listAlterGeoName);
+//                InsertListGeoName(listAlterGeoName);
+                UpdateGeoName(listAlterGeoName);
                 listAlterGeoName.clear();
             }
 
@@ -137,5 +148,29 @@ public class ConvertAlterName {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private Boolean UpdateGeoName(List<AlterGeoName> list) {
+        try (Connection connection = DriverManager.getConnection("jdbc:sqlite:sample.db")) {
+            // create a database connection
+
+            Statement statement = connection.createStatement();
+            statement.setQueryTimeout(30);  // set timeout to 30 sec.
+
+            statement.executeUpdate("PRAGMA synchronous = 0;");
+            statement.executeUpdate("PRAGMA journal_mode = OFF;");
+            statement.executeUpdate("BEGIN;");
+            for (AlterGeoName item : list) {
+                UpdateLineDB(statement, item);
+            }
+            statement.execute("commit;");
+
+        } catch (SQLException e) {
+            // if the error message is "out of memory",
+            // it probably means no database file is found
+            System.err.println(e.getMessage());
+            return false;
+        }
+        return true;
     }
 }

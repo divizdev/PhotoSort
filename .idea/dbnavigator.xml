@@ -25,14 +25,26 @@
     <show-object-properties value="true" />
     <loaded-nodes>
       <connection connection-id="808c2b36-102f-4093-b9c8-16a6232db9de">
-        <schema name="main" object-types="column, index, table, view" />
+        <schema name="main" object-types="column, constraint, index, table, dataset trigger, view" />
       </connection>
     </loaded-nodes>
   </component>
   <component name="DBNavigator.Project.DatabaseConsoleManager">
     <connection id="808c2b36-102f-4093-b9c8-16a6232db9de">
-      <console name="Connection" type="STANDARD"><![CDATA[select count(*) from "GeoName" as g
- inner join "AlterGeoName" as a on g.geonameid = a.geonameid;]]></console>
+      <console name="Connection" type="STANDARD"><![CDATA[explain query plan   select   * , ( (g.latitude - 45.434698) * (g.latitude - 45.434698) +
+ ( g.longitude - 12.322770 ) * ( g.longitude - 12.322770 ) ) * (110 * 110) as distance
+ from "GeoName" as g
+--inner join "AlterGeoName" as a on g.geonameid = a.geonameid
+where latitude > 44.8 and latitude < 46.8
+     and longitude > 11.25 and longitude < 13.55
+--     and feature_class = 'P'
+--      and distance < 2
+      order by distance asc --, ru desc
+      limit 10;
+--g.geonameid, g.name, a."alternateName",  g.country_code, g.latitude, g.longitude
+--create index main.gps on "GeoName" (longitude, latitude, feature_class);
+--commit]]></console>
+      <console name="delete" type="STANDARD"><![CDATA[reindex]]></console>
     </connection>
   </component>
   <component name="DBNavigator.Project.DatasetFilterManager">
@@ -108,7 +120,7 @@
           <database-logging value="false" />
           <connect-automatically value="true" />
           <restore-workspace value="true" />
-          <environment-type value="default" />
+          <environment-type value="development" />
           <idle-time-to-disconnect value="30" />
           <password-expiry-time value="10" />
           <max-connection-pool-size value="7" />
@@ -197,9 +209,9 @@
       <lookup-filters>
         <lookup-objects>
           <object-type name="SCHEMA" enabled="true" />
-          <object-type name="USER" enabled="false" />
-          <object-type name="ROLE" enabled="false" />
-          <object-type name="PRIVILEGE" enabled="false" />
+          <object-type name="USER" enabled="true" />
+          <object-type name="ROLE" enabled="true" />
+          <object-type name="PRIVILEGE" enabled="true" />
           <object-type name="CHARSET" enabled="false" />
           <object-type name="TABLE" enabled="true" />
           <object-type name="VIEW" enabled="true" />
@@ -254,8 +266,8 @@
         <data-length-threshold value="250" />
       </values-list-popup>
       <general>
-        <fetch-block-size value="100" />
-        <fetch-timeout value="30" />
+        <fetch-block-size value="500" />
+        <fetch-timeout value="300" />
         <trim-whitespaces value="true" />
         <convert-empty-strings-to-null value="true" />
         <select-content-on-cell-edit value="true" />
@@ -277,7 +289,6 @@
           <content-type name="SQL" enabled="true" />
           <content-type name="PL/SQL" enabled="true" />
           <content-type name="Groovy" enabled="true" />
-          <content-type name="AIDL" enabled="true" />
           <content-type name="YAML" enabled="true" />
           <content-type name="Manifest" enabled="true" />
         </content-types>
@@ -454,8 +465,8 @@
     </code-completion-settings>
     <execution-engine-settings>
       <statement-execution>
-        <fetch-block-size value="100" />
-        <execution-timeout value="20" />
+        <fetch-block-size value="10000" />
+        <execution-timeout value="30" />
         <debug-execution-timeout value="600" />
         <focus-result value="false" />
         <prompt-execution value="false" />
