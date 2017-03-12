@@ -54,6 +54,12 @@ public class Main {
 
             long start = System.currentTimeMillis();
 
+            statement.setQueryTimeout(30);  // set timeout to 30 sec.
+
+            statement.executeUpdate("PRAGMA synchronous = 0;");
+            statement.executeUpdate("PRAGMA journal_mode = OFF;");
+            statement.executeUpdate("BEGIN;");
+
             for (Path path : dirStream) {
 
                 long startReadMetadata = System.currentTimeMillis();
@@ -83,10 +89,17 @@ public class Main {
                 Main.accumulationStatistic(startReadMetadata, finishReadMetadata, finishGetGeoName, finishInsertPhotoInfo);
                 count++;
                 if (count > 99){
+
+                    statement.execute("commit;");
                     i++;
                     System.out.println("Processed: " + count * i);
                     Main.printStatistic(count);
                     count = 0;
+
+                    statement.executeUpdate("PRAGMA synchronous = 0;");
+                    statement.executeUpdate("PRAGMA journal_mode = OFF;");
+                    statement.executeUpdate("BEGIN;");
+
                 }
             }
 
