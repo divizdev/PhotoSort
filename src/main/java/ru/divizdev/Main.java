@@ -93,17 +93,16 @@ public class Main {
                     statement.execute("commit;");
                     i++;
                     System.out.println("Processed: " + count * i);
-                    Main.printStatistic(count);
+                    Main.printStatistic(count * i);
                     count = 0;
-
-                    statement.executeUpdate("PRAGMA synchronous = 0;");
-                    statement.executeUpdate("PRAGMA journal_mode = OFF;");
                     statement.executeUpdate("BEGIN;");
 
                 }
             }
 
             long finish = System.currentTimeMillis();
+
+            System.out.println("Full time: " + (finish - start));
 
         } catch (SQLException | IOException | ImageProcessingException e) {
             e.printStackTrace();
