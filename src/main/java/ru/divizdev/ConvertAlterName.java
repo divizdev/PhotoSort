@@ -1,10 +1,7 @@
 package ru.divizdev;
 
 import java.io.*;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +26,7 @@ public class ConvertAlterName {
 
     private final String insertLineGeoName = "insert into AlterGeoName values(%d, %d, '%s', '%s', '%s', '%s', '%s', '%s')";
 
-    private final String updateDbSql = "update GeoName2 set name = '%s', ru = 1 where geonameid = %d";
+    private final String updateDbSql = "update GeoName2 set name = :1, ru = 1 where geonameid = :2";
 
 
     public Boolean CreateDB() {
@@ -87,12 +84,14 @@ public class ConvertAlterName {
         statement.executeUpdate(command);
     }
 
-    private void UpdateLineDB(Statement statement, AlterGeoName line) throws SQLException {
-        String command = String.format(updateDbSql, line.getAlternateName(), line.getGeonameid());
-        statement.executeUpdate(command);
+    private void UpdateLineDB(Connection connection, AlterGeoName line) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement(updateDbSql);
+        statement.setString(1, line.getAlternateName());
+        statement.setDouble(2, line.getGeonameid());
+        statement.execute();
     }
 
-    public void LoadFileToBD(String nameFile) {
+    public void LoadFileToDB(String nameFile) {
         File file = new File(nameFile);
         Integer count = 0;
         int countFail = 0;
@@ -159,7 +158,7 @@ public class ConvertAlterName {
             statement.executeUpdate("PRAGMA journal_mode = OFF;");
             statement.executeUpdate("BEGIN;");
             for (AlterGeoName item : list) {
-                UpdateLineDB(statement, item);
+                UpdateLineDB(connection, item);
             }
             statement.execute("commit;");
 

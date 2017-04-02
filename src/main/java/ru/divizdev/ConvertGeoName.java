@@ -24,19 +24,20 @@ public class ConvertGeoName {
             "ru integer)\n";
 
     private final static String INSERT_LINE_GEO_NAME = "insert into GeoName2 values(" +
-            "%d, " +
-            "'%s', " +
-            "'%s', " +
-            "'%s', " +
-            "'%s', " +
-            "'%s', " +
-            "'%d' " +
+            ":1, " +
+            ":2, " +
+            ":3, " +
+            ":4, " +
+            ":5, " +
+            ":6, " +
+            "0" +
             ")";
 
     public Boolean CreateDB() {
 
         try (Connection connection = DriverManager.getConnection("jdbc:sqlite:sample.db")) {
             // create a database connection
+
 
             Statement statement = connection.createStatement();
             statement.setQueryTimeout(30);  // set timeout to 30 sec.
@@ -66,7 +67,7 @@ public class ConvertGeoName {
             statement.executeUpdate("PRAGMA journal_mode = OFF;");
             statement.executeUpdate("BEGIN;");
             for (GeoName geoName : list) {
-                InsertLineDB(statement, geoName);
+                InsertLineDB(connection, geoName);
             }
             statement.execute("commit;");
 
@@ -79,17 +80,16 @@ public class ConvertGeoName {
         return true;
     }
 
-    private void InsertLineDB(Statement statement, GeoName line) throws SQLException {
+    private void InsertLineDB(Connection connection, GeoName line) throws SQLException {
 
-        String command = String.format(INSERT_LINE_GEO_NAME,
-                line.getGeonameid(),
-                line.getName(),
-                line.getLatitude(),
-                line.getLongitude(),
-                line.getCountryCode(),
-                line.getTimezone(),
-                0);
-        statement.executeUpdate(command);
+        PreparedStatement statement = connection.prepareStatement(INSERT_LINE_GEO_NAME);
+        statement.setInt(1, line.getGeonameid());
+        statement.setString(2, line.getName());
+        statement.setDouble(3, Double.parseDouble(line.getLatitude()));
+        statement.setDouble(4, Double.parseDouble(line.getLongitude()));
+        statement.setString(5, line.getCountryCode());
+        statement.setString(6, line.getTimezone());
+        statement.execute();
     }
 
     public void printTable() {
@@ -113,7 +113,7 @@ public class ConvertGeoName {
 
     }
 
-    public void LoadFileToBD(String nameFile) {
+    public void LoadFileToDB(String nameFile) {
         File file = new File(nameFile);
         Integer count = 0;
 
