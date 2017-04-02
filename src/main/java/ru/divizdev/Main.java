@@ -22,25 +22,26 @@ public class Main {
 
     static long timeReadMetadata = 0, timeGetGeoName = 0, timeInsertPhotoInfo = 0;
 
-    private static void accumulationStatistic(long startReadMetadata,  long finishReadMetadata,  long finishGetGeoName,  long finishInsertPhotoInfo){
-        timeReadMetadata += finishReadMetadata - startReadMetadata;
-        timeGetGeoName += finishGetGeoName - finishReadMetadata;
+    private static void accumulationStatistic(long startReadMetadata, long finishReadMetadata, long finishGetGeoName, long finishInsertPhotoInfo) {
+        timeReadMetadata    += finishReadMetadata - startReadMetadata;
+        timeGetGeoName      += finishGetGeoName - finishReadMetadata;
         timeInsertPhotoInfo += finishInsertPhotoInfo - finishGetGeoName;
     }
 
-    private static void printStatistic(int iterationCount){
-        long timeReadMetadata = Main.timeReadMetadata / iterationCount
-           , timeGetGeoName = Main.timeGetGeoName / iterationCount
-           , timeInsertPhotoInfo = Main.timeInsertPhotoInfo / iterationCount;
-
+    private static void printStatistic(int iterationCount) {
+        long timeReadMetadata = Main.timeReadMetadata / iterationCount,
+             timeGetGeoName = Main.timeGetGeoName / iterationCount,
+             timeInsertPhotoInfo = Main.timeInsertPhotoInfo / iterationCount;
+        
 
         System.out.println("timeReadMetadata: " + timeReadMetadata);
         System.out.println("timeGetGeoName: " + timeGetGeoName);
         System.out.println("timeInsertPhotoInfo: " + timeInsertPhotoInfo);
+        Main.timeReadMetadata = 0; Main.timeGetGeoName = 0; Main.timeInsertPhotoInfo = 0;
     }
 
     public static void main(String[] args) {
-        // write your code here
+
         String dirName = "D:\\develop\\SortPhoto\\Пленка\\";
         DBGpsName gpsName = new DBGpsName();
         DBPhotoInfo dbPhotoInfo = new DBPhotoInfo();
@@ -52,7 +53,7 @@ public class Main {
 
             System.out.println("Start...");
 
-            long start = System.currentTimeMillis();
+            long start = System.nanoTime();
 
             statement.setQueryTimeout(30);  // set timeout to 30 sec.
 
@@ -62,7 +63,7 @@ public class Main {
 
             for (Path path : dirStream) {
 
-                long startReadMetadata = System.currentTimeMillis();
+                long startReadMetadata = System.nanoTime();
                 Metadata metadata = ImageMetadataReader.readMetadata(path.toFile());
                 Date date = new Date(0);
                 GpsInfo gpsData = new GpsInfo("","", 0, 0);
@@ -72,7 +73,7 @@ public class Main {
                     date = exif.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
                 }
                 GpsDirectory gpsDirectory = metadata.getFirstDirectoryOfType(GpsDirectory.class);
-                long finishReadMetadata = System.currentTimeMillis();
+                long finishReadMetadata = System.nanoTime();
                 if (gpsDirectory != null) {
                     GeoLocation geoLocation = gpsDirectory.getGeoLocation();
                     if (geoLocation != null) {
@@ -81,10 +82,10 @@ public class Main {
                     gpsData = gpsName.getGeoName(statement, geoLocation.getLatitude(), geoLocation.getLongitude());
                     }
                 }
-                long finishGetGeoName = System.currentTimeMillis();
+                long finishGetGeoName = System.nanoTime();
                 PhotoInfo photoInfo = new PhotoInfo(gpsData, date, path.getFileName().toString(), path.getParent().toString());
                 dbPhotoInfo.insertDBPhotoInfo(statement, photoInfo);
-                long finishInsertPhotoInfo = System.currentTimeMillis();
+                long finishInsertPhotoInfo = System.nanoTime();
 
                 Main.accumulationStatistic(startReadMetadata, finishReadMetadata, finishGetGeoName, finishInsertPhotoInfo);
                 count++;
@@ -100,7 +101,7 @@ public class Main {
                 }
             }
 
-            long finish = System.currentTimeMillis();
+            long finish = System.nanoTime();
 
             System.out.println("Full time: " + (finish - start));
 
@@ -108,14 +109,18 @@ public class Main {
             e.printStackTrace();
         }
 
-
+//        long start = System.nanoTime();
 //        ConvertGeoName convertGeoName = new ConvertGeoName();
 //        convertGeoName.CreateDB();
+//
 //        convertGeoName.LoadFileToBD("allCountries.txt");
-
+//
+//
 //        ConvertAlterName convertAlterName = new ConvertAlterName();
-//        convertAlterName.CreateDB();
+////        convertAlterName.CreateDB();
 //        convertAlterName.LoadFileToBD("alternateNames.txt");
+//        long finish = System.nanoTime();
+//        System.out.println("Full time: " + (finish - start));
 
 //        System.out.printf("/n Широта %f, Долгота %f",
 //                ConvertCoordinat.secToDegrees(45, 26, 8.19),

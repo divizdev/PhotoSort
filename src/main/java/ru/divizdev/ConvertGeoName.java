@@ -14,47 +14,24 @@ public class ConvertGeoName {
 
     private final static int SIZE_PACKAGE = 1000;
 
-    private final static String CREATE_DB_SQL_GEO_NAME = "create table if not exists GeoName (" +
+    private final static String CREATE_DB_SQL_GEO_NAME = "create table GeoName2 (" +
             "geonameid  integer PRIMARY KEY,\n" +
             "name  text,\n" +
-//            "asciiname text,\n" +
-//            "alternatenames  text,\n" +
             "latitude real,\n" +
             "longitude real,\n" +
-            "feature_class text    ,\n" +
-            "feature_code text  ,\n" +
             "country_code text  ,\n" +
-            "cc2 text,\n" +
-            "admin1_code  text,\n" +
-            "admin2_code  text,\n" +
-            "admin3_code  text,\n" +
-            "admin4_code  text,\n" +
-            "population   text,\n" +
-            "elevation    text,\n" +
-            "dem text,\n" +
             "timezone text,\n" +
-            "modification_date datetime)\n";
+            "ru integer)\n";
 
-    private final static String INSERT_LINE_GEO_NAME = "insert into GeoName values(" +
+    private final static String INSERT_LINE_GEO_NAME = "insert into GeoName2 values(" +
             "%d, " +
             "'%s', " +
-//            "'%s', " +
-//            "'%s', " +
             "'%s', " +
             "'%s', " +
             "'%s', " +
             "'%s', " +
-            "'%s', " +
-            "'%s', " +
-            "'%s', " +
-            "'%s', " +
-            "'%s', " +
-            "'%s', " +
-            "'%s', " +
-            "'%s', " +
-            "'%s', " +
-            "'%s', " +
-            "'%s' )";
+            "'%d' " +
+            ")";
 
     public Boolean CreateDB() {
 
@@ -64,7 +41,7 @@ public class ConvertGeoName {
             Statement statement = connection.createStatement();
             statement.setQueryTimeout(30);  // set timeout to 30 sec.
 
-            statement.executeUpdate("drop table if exists GeoName");
+            statement.executeUpdate("drop table if exists GeoName2");
             statement.executeUpdate(CREATE_DB_SQL_GEO_NAME);
         } catch (SQLException e) {
             // if the error message is "out of memory",
@@ -107,23 +84,11 @@ public class ConvertGeoName {
         String command = String.format(INSERT_LINE_GEO_NAME,
                 line.getGeonameid(),
                 line.getName(),
-//                line.getAsciiname(),
-//                line.getAlternatenames(),
                 line.getLatitude(),
                 line.getLongitude(),
-                line.getFeatureClass(),
-                line.getFeatureCode(),
                 line.getCountryCode(),
-                line.getCc2(),
-                line.getAdmin1Code(),
-                line.getAdmin2Code(),
-                line.getAdmin3Code(),
-                line.getAdmin4Code(),
-                line.getPopulation(),
-                line.getElevation(),
-                line.getDem(),
                 line.getTimezone(),
-                line.getModificationDate());
+                0);
         statement.executeUpdate(command);
     }
 
@@ -157,27 +122,27 @@ public class ConvertGeoName {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] arr = line.split("\t");
-                if (arr.length == GeoName.LENGTH_PARAM) {
+                if (arr.length == GeoName.LENGTH_PARAM && arr[6].equalsIgnoreCase("P")) {
                     GeoName geoName = new GeoName(
                             Integer.valueOf(arr[0]),
-                            arr[1].replace("'", ""),
-                            arr[2].replace("'", ""),
-                            arr[3].replace("'", ""),
-                            arr[4].replace("'", ""),
-                            arr[5].replace("'", ""),
-                            arr[6].replace("'", ""),
-                            arr[7].replace("'", ""),
-                            arr[8].replace("'", ""),
-                            arr[9].replace("'", ""),
-                            arr[10].replace("'", ""),
-                            arr[11].replace("'", ""),
-                            arr[12].replace("'", ""),
-                            arr[13].replace("'", ""),
-                            arr[14].replace("'", ""),
-                            arr[15].replace("'", ""),
-                            arr[16].replace("'", ""),
-                            arr[17].replace("'", ""),
-                            arr[18].replace("'", "")
+                            arr[1].replace("'",""),
+                            arr[2].replace("'",""),
+                            arr[3].replace("'",""),
+                            arr[4].replace("'",""),
+                            arr[5].replace("'",""),
+                            arr[6].replace("'",""),
+                            arr[7].replace("'",""),
+                            arr[8].replace("'",""),
+                            arr[9].replace("'",""),
+                            arr[10].replace("'",""),
+                            arr[11].replace("'",""),
+                            arr[12].replace("'",""),
+                            arr[13].replace("'",""),
+                            arr[14].replace("'",""),
+                            arr[15].replace("'",""),
+                            arr[16].replace("'",""),
+                            arr[17].replace("'",""),
+                            arr[18].replace("'","")
                     );
                     listGeoName.add(geoName);
                 }

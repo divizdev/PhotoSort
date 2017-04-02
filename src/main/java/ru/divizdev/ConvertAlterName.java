@@ -29,7 +29,7 @@ public class ConvertAlterName {
 
     private final String insertLineGeoName = "insert into AlterGeoName values(%d, %d, '%s', '%s', '%s', '%s', '%s', '%s')";
 
-    private final String updateDbSql = "update GeoName set name = '%s' where geonameid = %d";
+    private final String updateDbSql = "update GeoName2 set name = '%s', ru = 1 where geonameid = %d";
 
 
     public Boolean CreateDB() {
@@ -38,13 +38,11 @@ public class ConvertAlterName {
             // create a database connection
 
             Statement statement = connection.createStatement();
-            statement.setQueryTimeout(30);  // set timeout to 30 sec.
+            statement.setQueryTimeout(30);
 
             statement.executeUpdate(dropDb);
             statement.executeUpdate(createDbSql);
         } catch (SQLException e) {
-            // if the error message is "out of memory",
-            // it probably means no database file is found
             System.err.println(e.getMessage());
             return false;
         }
@@ -89,9 +87,9 @@ public class ConvertAlterName {
         statement.executeUpdate(command);
     }
 
-    private void UpdateLineDB(Statement statemen, AlterGeoName line) throws SQLException {
+    private void UpdateLineDB(Statement statement, AlterGeoName line) throws SQLException {
         String command = String.format(updateDbSql, line.getAlternateName(), line.getGeonameid());
-        statemen.executeUpdate(command);
+        statement.executeUpdate(command);
     }
 
     public void LoadFileToBD(String nameFile) {
@@ -109,7 +107,7 @@ public class ConvertAlterName {
                     for (int i = 0; i < arr.length; i++) {
                         param[i] = arr[i];
                     }
-                    if (param[2].toLowerCase().equals("ru") || param[2].toLowerCase().equals("rus")) {
+                    if (param[2].equalsIgnoreCase("ru") || param[2].equalsIgnoreCase("rus")) {
                         AlterGeoName item = new AlterGeoName(
                                 Integer.valueOf(arr[0]),
                                 Integer.valueOf(arr[1]),
