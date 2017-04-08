@@ -57,8 +57,8 @@ public class ConvertGeoName {
 
 
     public boolean InsertListGeoName(List<GeoName> list) {
-                try (Connection connection = DriverManager.getConnection("jdbc:sqlite:sample.db")) {
-                    // create a database connection
+        try (Connection connection = DriverManager.getConnection("jdbc:sqlite:sample.db")) {
+            // create a database connection
 
             Statement statement = connection.createStatement();
             statement.setQueryTimeout(30);  // set timeout to 30 sec.
@@ -125,24 +125,12 @@ public class ConvertGeoName {
                 if (arr.length == GeoName.LENGTH_PARAM && arr[6].equalsIgnoreCase("P")) {
                     GeoName geoName = new GeoName(
                             Integer.valueOf(arr[0]),
-                            arr[1].replace("'",""),
-                            arr[2].replace("'",""),
-                            arr[3].replace("'",""),
-                            arr[4].replace("'",""),
-                            arr[5].replace("'",""),
-                            arr[6].replace("'",""),
-                            arr[7].replace("'",""),
-                            arr[8].replace("'",""),
-                            arr[9].replace("'",""),
-                            arr[10].replace("'",""),
-                            arr[11].replace("'",""),
-                            arr[12].replace("'",""),
-                            arr[13].replace("'",""),
-                            arr[14].replace("'",""),
-                            arr[15].replace("'",""),
-                            arr[16].replace("'",""),
-                            arr[17].replace("'",""),
-                            arr[18].replace("'","")
+                            arr[1], arr[2], arr[3], arr[4],
+                            arr[5], arr[6], arr[7], arr[8],
+                            arr[9], arr[10], arr[11],
+                            arr[12], arr[13], arr[14],
+                            arr[15], arr[16],
+                            arr[17], arr[18]
                     );
                     listGeoName.add(geoName);
                 }
